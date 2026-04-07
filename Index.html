@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Payment Manager - Kirim Notifikasi Telegram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f4fa 0%, #e2e8f0 100%);
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* container utama */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header & card */
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.02);
+            padding: 1.8rem 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1F2B3D, #2A3E5A);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 i {
+            background: none;
+            color: #2c7da0;
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0f2b3d;
+            border-left: 5px solid #2c7da0;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1e3a5f;
+            margin-bottom: 1rem;
+        }
+
+        /* form elements */
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2c5a7a;
+            margin-bottom: 0.4rem;
+        }
+
+        input, button {
+            border-radius: 1rem;
+            border: 1px solid #cfdfed;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            background: white;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+
+        button {
+            background: #1e4663;
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #0f3550;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+        }
+
+        button.secondary {
+            background: #e2e8f0;
+            color: #1e4663;
+            border: 1px solid #cbdde9;
+        }
+
+        button.secondary:hover {
+            background: #cbdde9;
+        }
+
+        button.danger {
+            background: #fff0f0;
+            color: #b91c1c;
+            border: 1px solid #ffcdcd;
+        }
+        button.danger:hover {
+            background: #ffe0e0;
+            color: #991b1b;
+        }
+
+        .btn-success {
+            background: #1f7b4d;
+        }
+        .btn-success:hover {
+            background: #16633e;
+        }
+
+        /* tabel / daftar transaksi */
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .transaction-item {
+            background: #fefefe;
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #e9f0f5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+            transition: 0.2s;
+        }
+
+        .transaction-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+
+        .trx-id {
+            font-weight: 700;
+            background: #eef3fc;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: #2c7da0;
+        }
+
+        .trx-customer {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .trx-amount {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: #0f3b2c;
+            background: #e6f4ea;
+            padding: 0.2rem 0.9rem;
+            border-radius: 40px;
+        }
+
+        .trx-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-top: 1rem;
+        }
+
+        .file-upload-area {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .file-upload-area input {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .preview-img {
+            margin-top: 0.5rem;
+            max-width: 80px;
+            max-height: 60px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
+
+        .badge-pending {
+            background: #fff3e0;
+            color: #b45309;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        /* konfigurasi bot */
+        .bot-config {
+            background: #eef2f9;
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #1f2b3d;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        hr {
+            margin: 1rem 0;
+            border-color: #e2edf5;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .card { padding: 1.2rem; }
+            .trx-actions { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <h1>
+                📋 Payment Info Manager
+            </h1>
+            <div class="badge-pending" style="background:#e9ecf3;">✅ Auto Kirim ke Telegram + Screenshot</div>
+        </div>
+        <p style="margin-top: 12px; color: #2c5a74;">Kelola transaksi, upload bukti screenshot, dan kirim notifikasi selesai ke Telegram channel/chat secara instan.</p>
+    </div>
+
+    <!-- Konfigurasi Bot Telegram -->
+    <div class="card">
+        <h2>🤖 Konfigurasi Bot Telegram</h2>
+        <div class="bot-config">
+            <div class="flex-row">
+                <div class="input-group" style="flex:2">
+                    <label>🔑 Token Bot</label>
+                    <input type="text" id="botToken" placeholder="8706219781:AAEmzyLbDeXGbwlcspFSTwLlPdk9S-9NXAw" autocomplete="off">
+                </div>
+                <div class="input-group" style="flex:1.5">
+                    <label>📢 Chat ID / Channel ID</label>
+                    <input type="text" id="chatId" placeholder="-1003854422141">
+                </div>
+                <div class="input-group" style="flex:0.5">
+                    <button id="saveBotConfigBtn" style="margin-top: 22px;">💾 Simpan</button>
+                </div>
+            </div>
+            <small style="display: block; margin-top: 12px; color: #4b6a84;">⚠️ Token akan tersimpan di browser Anda. Pastikan bot sudah menjadi admin di grup/channel tujuan. Screenshot akan dikirim sebagai foto dengan caption detail transaksi.</small>
+        </div>
+    </div>
+
+    <!-- Form Tambah Transaksi Baru -->
+    <div class="card">
+        <h2>➕ Tambah Transaksi Baru</h2>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Nama Pelanggan</label>
+                <input type="text" id="custName" placeholder="Contoh: Budi Santoso">
+            </div>
+            <div class="input-group">
+                <label>Nominal (Rp)</label>
+                <input type="number" id="amount" placeholder="100000">
+            </div>
+            <div class="input-group">
+                <button id="addTransactionBtn">✨ Tambah Transaksi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daftar Transaksi Pending -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h2>📋 Transaksi Pending</h2>
+            <button id="clearAllBtn" class="secondary danger" style="background:#fbe9e9; color:#ac3a3a;">🗑 Hapus Semua</button>
+        </div>
+        <div id="transactionsContainer" class="transactions-list">
+            <!-- dynamic list from JS -->
+            <div style="text-align: center; padding: 40px; color: #6f8eac;">Belum ada transaksi. Tambahkan transaksi baru di atas.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======================== DATA STORE ========================
+    let transactions = [];      // { id, customer, amount, createdAt }
+    let botToken = "";
+    let chatId = "";
+
+    // DOM elements
+    const tokenInput = document.getElementById('botToken');
+    const chatIdInput = document.getElementById('chatId');
+    const saveBotBtn = document.getElementById('saveBotConfigBtn');
+    const addBtn = document.getElementById('addTransactionBtn');
+    const custNameInput = document.getElementById('custName');
+    const amountInput = document.getElementById('amount');
+    const transactionsContainer = document.getElementById('transactionsContainer');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+
+    // Helper: format Rupiah
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    }
+
+    // Simpan transaksi ke localStorage
+    function saveTransactionsToLocal() {
+        localStorage.setItem('payment_transactions', JSON.stringify(transactions));
+    }
+
+    // Load transaksi dari localStorage
+    function loadTransactionsFromLocal() {
+        const stored = localStorage.getItem('payment_transactions');
+        if (stored) {
+            try {
+                transactions = JSON.parse(stored);
+            } catch(e) { transactions = []; }
+        } else {
+            // contoh data awal agar tidak kosong
+            transactions = [
+                { id: Date.now() + 1, customer: "Ayu Wijaya", amount: 275000, createdAt: new Date().toISOString() },
+                { id: Date.now() + 2, customer: "Rangga Permana", amount: 550000, createdAt: new Date().toISOString() }
+            ];
+            saveTransactionsToLocal();
+        }
+    }
+
+    // Simpan konfigurasi bot ke localStorage
+    function loadBotConfig() {
+        const savedToken = localStorage.getItem('telegram_bot_token');
+        const savedChatId = localStorage.getItem('telegram_chat_id');
+        if (savedToken) botToken = savedToken;
+        if (savedChatId) chatId = savedChatId;
+        tokenInput.value = botToken;
+        chatIdInput.value = chatId;
+    }
+    function saveBotConfigToLocal() {
+        botToken = tokenInput.value.trim();
+        chatId = chatIdInput.value.trim();
+        localStorage.setItem('telegram_bot_token', botToken);
+        localStorage.setItem('telegram_chat_id', chatId);
+        showToast("✅ Konfigurasi bot tersimpan", "#1f7b4d");
+    }
+
+    // Toast notifikasi
+    let toastTimeout;
+    function showToast(message, bgColor = "#1f2b3d") {
+        let existingToast = document.querySelector('.toast-msg');
+        if(existingToast) existingToast.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        toast.style.backgroundColor = bgColor;
+        document.body.appendChild(toast);
+        if(toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { if(toast) toast.remove(); }, 3500);
+    }
+
+    // Kirim ke Telegram (teks + screenshot)
+    async function sendToTelegramWithPhoto(transaction, photoFile) {
+        if (!botToken || !chatId) {
+            showToast("❌ Token atau Chat ID belum diatur! Simpan konfigurasi terlebih dahulu.", "#b91c1c");
+            return false;
+        }
+        if (!photoFile) {
+            showToast("📸 Harap pilih screenshot bukti transaksi terlebih dahulu!", "#b45309");
+            return false;
+        }
+        // Validasi tipe file gambar
+        if (!photoFile.type.startsWith('image/')) {
+            showToast("⚠️ File harus berupa gambar (jpg, png, dll)", "#b91c1c");
+            return false;
+        }
+
+        // caption detail transaksi
+        const caption = `✅ *TRANSAKSI SELESAI* ✅\n\n🆔 ID: #${transaction.id}\n👤 Pelanggan: ${transaction.customer}\n💰 Jumlah: ${formatRupiah(transaction.amount)}\n📅 Waktu selesai: ${new Date().toLocaleString('id-ID')}\n\nTerima kasih sudah melakukan pembayaran.`;
+        
+        const formData = new FormData();
+        formData.append('chat_id', chatId);
+        formData.append('photo', photoFile);
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'Markdown');
+
+        const apiUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+        
+        try {
+            showToast("📤 Mengirim ke Telegram...", "#2c7da0");
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (result.ok) {
+                showToast("✅ Berhasil dikirim ke Telegram + screenshot!", "#1f7b4d");
+                return true;
+            } else {
+                console.error(result);
+                let errMsg = result.description || "Gagal mengirim, cek token/chat ID atau izin bot.";
+                if (errMsg.includes("Forbidden")) errMsg = "❌ Bot tidak memiliki akses ke chat/channel tersebut. Pastikan bot sudah menjadi admin.";
+                showToast(`❌ Gagal: ${errMsg}`, "#b91c1c");
+                return false;
+            }
+        } catch (error) {
+            console.error(error);
+            showToast(`❌ Error jaringan: ${error.message}`, "#b91c1c");
+            return false;
+        }
+    }
+
+    // Hapus transaksi berdasarkan ID
+    function deleteTransactionById(trxId) {
+        transactions = transactions.filter(t => t.id !== trxId);
+        saveTransactionsToLocal();
+        renderTransactions();
+        showToast("🗑 Transaksi dihapus", "#5a6e7c");
+    }
+
+    // Handler ketika klik "Done & Kirim" beserta screenshot
+    async function handleDoneAndSend(trxId, fileInputElement) {
+        const transaction = transactions.find(t => t.id === trxId);
+        if (!transaction) {
+            showToast("Transaksi tidak ditemukan", "#b91c1c");
+            return;
+        }
+        const file = fileInputElement.files[0];
+        if (!file) {
+            showToast("⚠️ Silakan pilih screenshot bukti transaksi terlebih dahulu!", "#b45309");
+            return;
+        }
+        // Kirim ke telegram
+        const success = await sendToTelegramWithPhoto(transaction, file);
+        if (success) {
+            // Hapus transaksi dari daftar pending setelah berhasil dikirim
+            deleteTransactionById(trxId);
+            // reset file input (optional) tidak perlu karena elemen akan dirender ulang
+        }
+        // jika gagal, transaksi tetap ada, user bisa coba lagi dengan file yang sama atau ganti
+    }
+
+    // Render semua transaksi ke dalam container
+    function renderTransactions() {
+        if (!transactionsContainer) return;
+        if (transactions.length === 0) {
+            transactionsContainer.innerHTML = `<div style="text-align: center; padding: 40px; background:#fafcff; border-radius: 1.5rem; color:#6f8eac;">✨ Tidak ada transaksi pending. Tambah transaksi baru untuk memulai.</div>`;
+            return;
+        }
+
+        let html = '';
+        transactions.forEach(trx => {
+            // id unik untuk file input dan tombol
+            const fileInputId = `file_${trx.id}`;
+            html += `
+                <div class="transaction-item" data-id="${trx.id}">
+                    <div class="transaction-header">
+                        <div style="display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;">
+                            <span class="trx-id">#${trx.id}</span>
+                            <span class="trx-customer">${escapeHtml(trx.customer)}</span>
+                        </div>
+                        <div class="trx-amount">${formatRupiah(trx.amount)}</div>
+                    </div>
+                    <div class="trx-actions">
+                        <div class="file-upload-area">
+                            <input type="file" id="${fileInputId}" accept="image/*" class="screenshot-input">
+                            <div style="font-size:12px; color:#6c8eae; margin-top:6px;">📸 Upload screenshot / bukti transfer</div>
+                            <img id="preview_${trx.id}" class="preview-img" style="display:none;" />
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-success done-kirim-btn" data-id="${trx.id}">✅ Done & Kirim ke Telegram</button>
+                            <button class="secondary danger hapus-btn" data-id="${trx.id}">🗑 Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        transactionsContainer.innerHTML = html;
+
+        // Attach event listeners untuk setiap tombol done & hapus
+        document.querySelectorAll('.done-kirim-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const trxId = parseInt(btn.getAttribute('data-id'));
+                const parentItem = btn.closest('.transaction-item');
+                const fileInput = parentItem.querySelector('.screenshot-input');
+                if (fileInput) {
+                    handleDoneAndSend(trxId, fileInput);
+                } else {
+                    showToast("Error: input file tidak ditemukan", "#b91c1c");
+                }
+            });
+        });
+
+        document.querySelectorAll('.hapus-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const trxId = parseInt(btn.getAttribute('data-id'));
+                if (confirm("Hapus transaksi ini tanpa mengirim notifikasi?")) {
+                    deleteTransactionById(trxId);
+                }
+            });
+        });
+
+        // Preview gambar (optional)
+        transactions.forEach(trx => {
+            const fileInput = document.getElementById(`file_${trx.id}`);
+            if (fileInput) {
+                fileInput.addEventListener('change', (event) => {
+                    const previewImg = document.getElementById(`preview_${trx.id}`);
+                    if (event.target.files && event.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImg.src = e.target.result;
+                            previewImg.style.display = "block";
+                            previewImg.style.maxWidth = "80px";
+                            previewImg.style.maxHeight = "60px";
+                        };
+                        reader.readAsDataURL(event.target.files[0]);
+                    } else {
+                        previewImg.style.display = "none";
+                    }
+                });
+            }
+        });
+    }
+
+    // simple escape html
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Tambah transaksi baru
+    function addTransaction() {
+        let customer = custNameInput.value.trim();
+        let amountRaw = amountInput.value.trim();
+        if (!customer) {
+            showToast("Nama pelanggan harus diisi!", "#b45309");
+            return;
+        }
+        if (!amountRaw || isNaN(parseFloat(amountRaw)) || parseFloat(amountRaw) <= 0) {
+            showToast("Nominal harus angka positif!", "#b45309");
+            return;
+        }
+        const amount = parseFloat(amountRaw);
+        const newTransaction = {
+            id: Date.now(),
+            customer: customer,
+            amount: amount,
+            createdAt: new Date().toISOString()
+        };
+        transactions.unshift(newTransaction); // tambah di awal
+        saveTransactionsToLocal();
+        renderTransactions();
+        // reset form
+        custNameInput.value = '';
+        amountInput.value = '';
+        showToast(`✅ Transaksi ${customer} ditambahkan`, "#1f7b4d");
+    }
+
+    // Hapus semua transaksi
+    function clearAllTransactions() {
+        if (transactions.length === 0) {
+            showToast("Tidak ada transaksi untuk dihapus", "#5a6e7c");
+            return;
+        }
+        if (confirm("⚠️ Hapus SEMUA transaksi pending? Data akan hilang permanen.")) {
+            transactions = [];
+            saveTransactionsToLocal();
+            renderTransactions();
+            showToast("Semua transaksi telah dihapus", "#5a6e7c");
+        }
+    }
+
+    // Event listeners
+    saveBotBtn.addEventListener('click', () => {
+        saveBotConfigToLocal();
+    });
+    addBtn.addEventListener('click', addTransaction);
+    clearAllBtn.addEventListener('click', clearAllTransactions);
+    
+    // Enter key pada form tambah
+    custNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTransaction(); });
+    amountInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTransaction(); });
+
+    // Inisialisasi data
+    loadTransactionsFromLocal();
+    loadBotConfig();
+    renderTransactions();
+</script>
+</body>
+</html>
